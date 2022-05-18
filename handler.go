@@ -16,7 +16,11 @@ var fileOpenAtTimeLayout = "01/02/06 15:04:05"
 var ErrDetectFileOpenTime = errors.New("ueLogHandler:Fail to detect file open time")
 
 type Log struct {
-	unreallognotify.LogInfo
+	Log          string
+	Category     string
+	Verbosity    string
+	Time         string
+	Frame        string
 	FileOpenTime time.Time
 }
 
@@ -25,7 +29,7 @@ type LogHandler func(Log) error
 type Handler struct {
 	Logs               chan Log
 	handlerList        []LogHandler
-	fileOpenAt         time.Time
+	fileOpenTime       time.Time
 	detectFileOpenTime bool
 }
 
@@ -61,7 +65,7 @@ func (w *Handler) Watch(ctx context.Context, filePath string, watchInterval time
 						eventHandleResult <- err
 						return
 					}
-					w.fileOpenAt = fileOpenAt
+					w.fileOpenTime = fileOpenAt
 					w.detectFileOpenTime = true
 				}
 
@@ -70,7 +74,14 @@ func (w *Handler) Watch(ctx context.Context, filePath string, watchInterval time
 					return
 				}
 
-				logData := Log{LogInfo: log, FileOpenTime: w.fileOpenAt}
+				logData := Log{
+					Log:          log.Log,
+					Category:     log.Category,
+					Verbosity:    log.Verbosity,
+					Time:         log.Time,
+					Frame:        log.Frame,
+					FileOpenTime: w.fileOpenTime,
+				}
 				err := w.handleLog(logData)
 				if err != nil {
 					eventHandleResult <- err
