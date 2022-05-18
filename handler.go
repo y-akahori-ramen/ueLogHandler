@@ -2,8 +2,8 @@ package ueloghandler
 
 import (
 	"context"
-	"errors"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -11,9 +11,8 @@ import (
 )
 
 var logFileOpenPattern = regexp.MustCompile(`Log\sfile\sopen,\s+(\S+\s+\S+)`)
-var fileOpenAtTimeLayout = "01/02/06 15:04:05"
-
-var ErrDetectFileOpenTime = errors.New("ueLogHandler:Fail to detect file open time")
+var fileOpenTimeLayout = "01/02/06 15:04:05"
+var logTimeLayout = "2006.01.02-15.04.05.000"
 
 type Log struct {
 	Log          string
@@ -21,28 +20,35 @@ type Log struct {
 	Verbosity    string
 	Time         string
 	Frame        string
-	FileOpenTime time.Time
+	FileOpenTime string
+}
+
+func (l *Log) ParseFileOpenTime(loc *time.Location) (time.Time, error) {
+	return time.ParseInLocation(fileOpenTimeLayout, l.FileOpenTime, loc)
+}
+
+func (l *Log) ParseTime(loc *time.Location) (time.Time, error) {
+	return time.ParseInLocation(logTimeLayout, strings.ReplaceAll(l.Time, ":", "."), loc)
 }
 
 type LogHandler func(Log) error
 
-type Handler struct {
-	Logs               chan Log
-	handlerList        []LogHandler
-	fileOpenTime       time.Time
-	detectFileOpenTime bool
+type Watcher struct {
+	Logs         chan Log
+	handlerList  []LogHandler
+	fileOpenTime string
 }
 
-func NewHandler() *Handler {
-	wacher := &Handler{Logs: make(chan Log)}
+func NewWatcher() *Watcher {
+	wacher := &Watcher{Logs: make(chan Log)}
 	return wacher
 }
 
-func (w *Handler) AddHandler(handler LogHandler) {
+func (w *Watcher) AddHandler(handler LogHandler) {
 	w.handlerList = append(w.handlerList, handler)
 }
 
-func (w *Handler) Watch(ctx context.Context, filePath string, watchInterval time.Duration) error {
+func (w *Watcher) Watch(ctx context.Context, filePath string, watchInterval time.Duration) error {
 	eventHandleResult := make(chan error)
 
 	var wg sync.WaitGroup
@@ -57,21 +63,9 @@ func (w *Handler) Watch(ctx context.Context, filePath string, watchInterval time
 		for {
 			select {
 			case log := <-watcher.Logs:
-				if !w.detectFileOpenTime && log.Category == "" && logFileOpenPattern.MatchString(log.Log) {
+				if w.fileOpenTime == "" && log.Category == "" && logFileOpenPattern.MatchString(log.Log) {
 					matches := logFileOpenPattern.FindStringSubmatch(log.Log)
-					timeStr := matches[1]
-					fileOpenAt, err := time.ParseInLocation(fileOpenAtTimeLayout, timeStr, time.Local)
-					if err != nil {
-						eventHandleResult <- err
-						return
-					}
-					w.fileOpenTime = fileOpenAt
-					w.detectFileOpenTime = true
-				}
-
-				if !w.detectFileOpenTime {
-					eventHandleResult <- ErrDetectFileOpenTime
-					return
+					w.fileOpenTime = matches[1]
 				}
 
 				logData := Log{
@@ -82,6 +76,7 @@ func (w *Handler) Watch(ctx context.Context, filePath string, watchInterval time
 					Frame:        log.Frame,
 					FileOpenTime: w.fileOpenTime,
 				}
+
 				err := w.handleLog(logData)
 				if err != nil {
 					eventHandleResult <- err
@@ -106,7 +101,7 @@ func (w *Handler) Watch(ctx context.Context, filePath string, watchInterval time
 	return err
 }
 
-func (w *Handler) handleLog(log Log) error {
+func (w *Watcher) handleLog(log Log) error {
 	for _, handler := range w.handlerList {
 		err := handler(log)
 		if err != nil {
