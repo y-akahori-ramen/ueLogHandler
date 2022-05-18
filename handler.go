@@ -2,6 +2,7 @@ package ueloghandler
 
 import (
 	"context"
+	"errors"
 	"regexp"
 	"strings"
 	"sync"
@@ -13,6 +14,7 @@ import (
 var logFileOpenPattern = regexp.MustCompile(`Log\sfile\sopen,\s+(\S+\s+\S+)`)
 var fileOpenTimeLayout = "01/02/06 15:04:05"
 var logTimeLayout = "2006.01.02-15.04.05.000"
+var ErrNoTimeData = errors.New("ueLogHandler:No time data")
 
 type Log struct {
 	Log          string
@@ -24,10 +26,16 @@ type Log struct {
 }
 
 func (l *Log) ParseFileOpenTime(loc *time.Location) (time.Time, error) {
+	if l.FileOpenTime == "" {
+		return time.Time{}, ErrNoTimeData
+	}
 	return time.ParseInLocation(fileOpenTimeLayout, l.FileOpenTime, loc)
 }
 
 func (l *Log) ParseTime(loc *time.Location) (time.Time, error) {
+	if l.Time == "" {
+		return time.Time{}, ErrNoTimeData
+	}
 	return time.ParseInLocation(logTimeLayout, strings.ReplaceAll(l.Time, ":", "."), loc)
 }
 
