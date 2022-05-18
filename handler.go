@@ -71,7 +71,7 @@ func (w *Watcher) Watch(ctx context.Context, filePath string, watchInterval time
 		for {
 			select {
 			case log := <-watcher.Logs:
-				if w.fileOpenTime == "" && log.Category == "" && logFileOpenPattern.MatchString(log.Log) {
+				if log.Category == "" && logFileOpenPattern.MatchString(log.Log) {
 					matches := logFileOpenPattern.FindStringSubmatch(log.Log)
 					w.fileOpenTime = matches[1]
 				}
