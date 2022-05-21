@@ -11,19 +11,60 @@ import (
 
 var logFileOpenPattern = regexp.MustCompile(`Log\sfile\sopen,\s+(\S+\s+\S+)`)
 
+type WatcherLog struct {
+	LogData      Log
+	FileOpenTime string
+}
+
+func (l *WatcherLog) ParseFileOpenTime(loc *time.Location) (time.Time, error) {
+	if l.FileOpenTime == "" {
+		return time.Time{}, ErrNoTimeData
+	}
+
+	const fileOpenTimeLayout = "01/02/06 15:04:05"
+	return time.ParseInLocation(fileOpenTimeLayout, l.FileOpenTime, loc)
+}
+
+type WatcherLogHandler interface {
+	HandleLog(log WatcherLog) error
+}
+
+func NewWatcherLogHandler(function func(log WatcherLog) error) WatcherLogHandler {
+	return &funcWatcherLogHanlder{function: function}
+}
+
+type funcWatcherLogHanlder struct {
+	function func(log WatcherLog) error
+}
+
+func (l *funcWatcherLogHanlder) HandleLog(log WatcherLog) error {
+	return l.function(log)
+}
+
+type ignoreWatcherLogHandler struct {
+	logHandler LogHandler
+}
+
+func (h *ignoreWatcherLogHandler) HandleLog(log WatcherLog) error {
+	return h.logHandler.HandleLog(log.LogData)
+}
+
 type Watcher struct {
-	Logs         chan Log
-	handlerList  []LogHandler
+	handlerList  []WatcherLogHandler
 	fileOpenTime string
 }
 
 func NewWatcher() *Watcher {
-	wacher := &Watcher{Logs: make(chan Log)}
+	wacher := &Watcher{}
 	return wacher
 }
 
-func (w *Watcher) AddHandler(handler LogHandler) {
+func (w *Watcher) AddWatcherLogHandler(handler WatcherLogHandler) {
 	w.handlerList = append(w.handlerList, handler)
+}
+
+func (w *Watcher) AddLogHandler(handler LogHandler) {
+	w.handlerList = append(w.handlerList, &ignoreWatcherLogHandler{logHandler: handler})
 }
 
 func (w *Watcher) Watch(ctx context.Context, filePath string, watchInterval time.Duration) error {
@@ -46,16 +87,18 @@ func (w *Watcher) Watch(ctx context.Context, filePath string, watchInterval time
 					w.fileOpenTime = matches[1]
 				}
 
-				logData := Log{
-					Log:          log.Log,
-					Category:     log.Category,
-					Verbosity:    log.Verbosity,
-					Time:         log.Time,
-					Frame:        log.Frame,
+				watcherLog := WatcherLog{
+					LogData: Log{
+						Log:       log.Log,
+						Category:  log.Category,
+						Verbosity: log.Verbosity,
+						Time:      log.Time,
+						Frame:     log.Frame,
+					},
 					FileOpenTime: w.fileOpenTime,
 				}
 
-				err := w.handleLog(logData)
+				err := w.handleLog(watcherLog)
 				if err != nil {
 					eventHandleResult <- err
 					return
@@ -79,7 +122,7 @@ func (w *Watcher) Watch(ctx context.Context, filePath string, watchInterval time
 	return err
 }
 
-func (w *Watcher) handleLog(log Log) error {
+func (w *Watcher) handleLog(log WatcherLog) error {
 	for _, handler := range w.handlerList {
 		err := handler.HandleLog(log)
 		if err != nil {
