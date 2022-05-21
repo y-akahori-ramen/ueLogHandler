@@ -28,7 +28,10 @@ func (h *StructuredLogHandler) HandleLog(log Log) error {
 	}
 	type Body map[string]interface{}
 
-	results, _ := GetStructuredDataFromLog[Header, Body](log.Log)
+	results, err := GetStructuredDataFromLog[Header, Body](log.Log)
+	if err != nil {
+		return err
+	}
 
 	if len(results) != 0 {
 		for _, result := range results {
