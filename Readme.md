@@ -28,12 +28,15 @@ func main() {
         cancel()
     }()
 
-    handler := ueloghandler.NewWatcher()
-    handler.AddHandler(func(log ueloghandler.Log) error {
+    wacher := ueloghandler.NewWatcher()
+    handler := ueloghandler.NewLogHandler(func(log ueloghandler.Log) error {
         fmt.Printf("%#v\n", log)
         return nil
     })
 
-    handler.Watch(ctx, "uelog.txt", time.Millisecond*500)
+    wacher.AddHandler(handler)
+
+    wacher.Watch(ctx, "uelog.txt", time.Millisecond*500)
 }
+
 ```

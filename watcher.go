@@ -81,7 +81,7 @@ func (w *Watcher) Watch(ctx context.Context, filePath string, watchInterval time
 
 func (w *Watcher) handleLog(log Log) error {
 	for _, handler := range w.handlerList {
-		err := handler(log)
+		err := handler.HandleLog(log)
 		if err != nil {
 			return err
 		}
