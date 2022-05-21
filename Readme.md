@@ -35,9 +35,52 @@ func main() {
 }
 ```
 
+### Structured Log
+Parse Unreal Engine format log and handle structured log.
+
+```go
+package main
+
+import (
+    "fmt"
+
+    ueloghandler "github.com/y-akahori-ramen/ueLogHandler"
+)
+
+type Header struct {
+    Version string
+    Host    string
+}
+
+type Body struct {
+    Event string
+    Value int
+}
+
+func main() {
+    structuredLogHandler := ueloghandler.NewStructuredLogHandler()
+
+    handlerFunc := func(data ueloghandler.TStructuredData[Header, Body], log ueloghandler.Log) error {
+        fmt.Printf("Category:%#v\n", log.Category)
+        fmt.Printf("Header:%#v\n", data.Header)
+        fmt.Printf("Body:%#v\n", data.Body)
+        return nil
+    }
+
+    structuredLogHandler.AddHandler(ueloghandler.NewStructuredLogDataHandler("SampleStructure", handlerFunc))
+
+    logStr := `[2022.05.21-16.20.57:100][183]LogTemp: _BEGIN_STRUCTURED_{"Header":{"Type":"SampleStructure"},"Body":{"Header":{"Version":"1.0","Host":"localhost"},"Body":{"Event":"Damage","Value":20}}}_END_STRUCTURED_`
+    structuredLogHandler.HandleLog(ueloghandler.NewLog(logStr))
+    // Output:
+    // Category:"LogTemp"
+    // Header:main.Header{Version:"1.0", Host:"localhost"}
+    // Body:main.Body{Event:"Damage", Value:20}
+}
+```
+
 ### Watch log file
 
-Watch Unreal Engine log file and handle the log as a structured log for each update.
+Watch Unreal Engine log file and handle log for each update.
 
 ```go
 package main
