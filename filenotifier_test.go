@@ -73,10 +73,11 @@ func (f *TestLogFile) Name() string {
 }
 
 type FileNotifierTestCase struct {
-	Name      string
-	TestLog   string
-	WantLogs  []string
-	CRLFCheck bool
+	Name          string
+	TestLog       string
+	WantLogs      []string
+	CRLFCheck     bool
+	WatchInterval time.Duration
 }
 
 func (tc *FileNotifierTestCase) Run(t *testing.T) {
@@ -104,7 +105,7 @@ func (tc *FileNotifierTestCase) Run(t *testing.T) {
 		assert.NoError(err)
 	}()
 
-	notifier := ueloghandler.NewFileNotifier(tmpFile.Name(), time.Millisecond)
+	notifier := ueloghandler.NewFileNotifier(tmpFile.Name(), tc.WatchInterval)
 
 	receiveLogs := []string{}
 	go func() {
@@ -177,28 +178,46 @@ line3
 
 	testCases := []FileNotifierTestCase{
 		{
-			Name:      "Basic",
-			TestLog:   testLog,
-			WantLogs:  wantLog,
-			CRLFCheck: false,
+			Name:          "Basic",
+			TestLog:       testLog,
+			WantLogs:      wantLog,
+			CRLFCheck:     false,
+			WatchInterval: time.Millisecond,
 		},
 		{
-			Name:      "CRLF",
-			TestLog:   testLog,
-			WantLogs:  wantLog,
-			CRLFCheck: true,
+			Name:          "CRLF",
+			TestLog:       testLog,
+			WantLogs:      wantLog,
+			CRLFCheck:     true,
+			WatchInterval: time.Millisecond,
 		},
 		{
-			Name:      "BOM",
-			TestLog:   "\ufeff" + testLog,
-			WantLogs:  wantLog,
-			CRLFCheck: false,
+			Name:          "BOM",
+			TestLog:       "\ufeff" + testLog,
+			WantLogs:      wantLog,
+			CRLFCheck:     false,
+			WatchInterval: time.Millisecond,
 		},
 		{
-			Name:      "BOM_CRLF",
-			TestLog:   "\ufeff" + testLog,
-			WantLogs:  wantLog,
-			CRLFCheck: true,
+			Name:          "BOM_CRLF",
+			TestLog:       "\ufeff" + testLog,
+			WantLogs:      wantLog,
+			CRLFCheck:     true,
+			WatchInterval: time.Millisecond,
+		},
+		{
+			Name:          "Flush",
+			TestLog:       testLog,
+			WantLogs:      wantLog,
+			CRLFCheck:     false,
+			WatchInterval: time.Minute,
+		},
+		{
+			Name:          "OneLine",
+			TestLog:       "Log file open, 05/02/22 13:01:53\n",
+			WantLogs:      []string{"Log file open, 05/02/22 13:01:53\n"},
+			CRLFCheck:     false,
+			WatchInterval: time.Millisecond,
 		},
 	}
 

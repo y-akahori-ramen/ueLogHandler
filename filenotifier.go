@@ -27,11 +27,17 @@ func NewFileNotifier(filePath string, watchInterval time.Duration) *FileNotifier
 	return wacher
 }
 
-// Flush Send unsent log to the Logs channel
+func (f *FileNotifier) Flush() error {
+	err := f.read(f.filePath)
+	f.sendUnsentLog()
+	return err
+}
+
+// sendUnsentLog
 //
 // The log is sent when the next log is started.
 // Therefore, there may be an unsent log when the Watch method ends.
-func (f *FileNotifier) Flush() error {
+func (f *FileNotifier) sendUnsentLog() {
 	if f.sb.Len() > 0 {
 		f.logs <- f.sb.String()
 		f.sb.Reset()
@@ -40,7 +46,6 @@ func (f *FileNotifier) Flush() error {
 	f.readBytes = 0
 	f.sb.Reset()
 	f.basicFormatSection = false
-	return nil
 }
 
 func (f *FileNotifier) Logs() chan string {
@@ -49,7 +54,7 @@ func (f *FileNotifier) Logs() chan string {
 
 // Subscribe Start watching log file and send logs to Logs channel
 func (f *FileNotifier) Subscribe(ctx context.Context) error {
-	f.Flush()
+	f.sendUnsentLog()
 
 	fstat, err := os.Stat(f.filePath)
 	if err != nil {
@@ -93,7 +98,7 @@ func (f *FileNotifier) read(filePath string) error {
 		return err
 	}
 	if fileRecreated := fs.Size() < f.readBytes; fileRecreated {
-		f.Flush()
+		f.sendUnsentLog()
 	}
 
 	_, err = file.Seek(f.readBytes, io.SeekStart)
