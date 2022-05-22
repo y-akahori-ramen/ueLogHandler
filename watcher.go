@@ -5,8 +5,6 @@ import (
 	"regexp"
 	"sync"
 	"time"
-
-	unreallognotify "github.com/y-akahori-ramen/unrealLogNotify"
 )
 
 var logFileOpenPattern = regexp.MustCompile(`Log\sfile\sopen,\s+(\S+\s+\S+)`)
@@ -67,34 +65,27 @@ func (w *Watcher) AddLogHandler(handler LogHandler) {
 	w.handlerList = append(w.handlerList, &ignoreWatcherLogHandler{logHandler: handler})
 }
 
-func (w *Watcher) Watch(ctx context.Context, filePath string, watchInterval time.Duration) error {
+func (w *Watcher) Watch(ctx context.Context, notifier Notifier) error {
 	eventHandleResult := make(chan error)
 
 	var wg sync.WaitGroup
 	watchEnd := make(chan struct{})
-
-	watcher := unreallognotify.NewWatcher(watchInterval)
-	watcher.SetConvertUTF8LF(true)
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		for {
 			select {
-			case log := <-watcher.Logs:
+			case logStr := <-notifier.Logs():
+				log := NewLog(logStr)
+
 				if log.Category == "" && logFileOpenPattern.MatchString(log.Log) {
 					matches := logFileOpenPattern.FindStringSubmatch(log.Log)
 					w.fileOpenTime = matches[1]
 				}
 
 				watcherLog := WatcherLog{
-					LogData: Log{
-						Log:       log.Log,
-						Category:  log.Category,
-						Verbosity: log.Verbosity,
-						Time:      log.Time,
-						Frame:     log.Frame,
-					},
+					LogData:      log,
 					FileOpenTime: w.fileOpenTime,
 				}
 
@@ -110,8 +101,11 @@ func (w *Watcher) Watch(ctx context.Context, filePath string, watchInterval time
 	}()
 
 	go func() {
-		err := watcher.Watch(ctx, filePath)
-		watcher.Flush()
+		err := notifier.Subscribe(ctx)
+		if err == nil {
+			err = notifier.Flush()
+		}
+
 		watchEnd <- struct{}{}
 		eventHandleResult <- err
 	}()
