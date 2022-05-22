@@ -121,8 +121,8 @@ func main() {
     wacher.AddLogHandler(logHandler)
     wacher.AddWatcherLogHandler(watcherLogHandler)
 
-    fileNotifler := ueloghandler.NewFileNotifier("ue.log", time.Millisecond*500)
+    fileNotifier := ueloghandler.NewFileNotifier("ue.log", time.Millisecond*500)
 
-    wacher.Watch(ctx, fileNotifler)
+    wacher.Watch(ctx, fileNotifier)
 }
 ```
