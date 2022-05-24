@@ -2,6 +2,7 @@ package ueloghandler_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	ueloghandler "github.com/y-akahori-ramen/ueLogHandler"
@@ -139,4 +140,17 @@ Line2
 			assert.Equal(wantLogInfo, logInfo)
 		})
 	}
+}
+
+func TestParseTimeg(t *testing.T) {
+	assert := assert.New(t)
+
+	log := ueloghandler.NewLog("[2022.05.01-17.56.38:615][429]LogTemp: Warning: WarningLog")
+	actualTime, err := log.ParseTime(time.UTC)
+	assert.NoError(err)
+	assert.Equal(time.Date(2022, 5, 1, 17, 56, 38, (int)(615*time.Millisecond), time.UTC), actualTime)
+
+	log = ueloghandler.NewLog("Log file open, 05/02/22 02:56:31")
+	actualTime, err = log.ParseTime(time.UTC)
+	assert.Equal(err, ueloghandler.ErrNoTimeData)
 }
