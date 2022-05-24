@@ -134,7 +134,7 @@ func (tc *FileNotifierTestCase) Run(t *testing.T) {
 	}
 }
 
-func TestWatcher(t *testing.T) {
+func TestFileNotifier(t *testing.T) {
 	testLog := `Log file open, 05/02/22 13:01:53
 LogWindows: Failed to load 'aqProf.dll' (GetLastError=126)
 LogInit: line1
