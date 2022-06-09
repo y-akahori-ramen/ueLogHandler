@@ -48,9 +48,9 @@ func appendGoType(statement *jen.Statement, typename string) error {
 func genStructureCode(structureName string, info StructureInfo) ([]jen.Code, error) {
 	code := []jen.Code{}
 
-	headerName := fmt.Sprintf("%sHeader", structureName)
-	headerFields := []jen.Code{}
-	for fieldName, value := range info.Header {
+	metaName := fmt.Sprintf("%sMeta", structureName)
+	metaFields := []jen.Code{}
+	for fieldName, value := range info.Meta {
 		field := jen.Id(fieldName)
 		switch value.(type) {
 		case string:
@@ -62,12 +62,12 @@ func genStructureCode(structureName string, info StructureInfo) ([]jen.Code, err
 		case bool:
 			field.Bool()
 		default:
-			return nil, fmt.Errorf("genStructureCode: Invalid Header Value Type Field:%s Value:%v Type:%s", fieldName, value, reflect.TypeOf(value))
+			return nil, fmt.Errorf("genStructureCode: Invalid Meta Value Type Field:%s Value:%v Type:%s", fieldName, value, reflect.TypeOf(value))
 		}
-		headerFields = append(headerFields, field)
+		metaFields = append(metaFields, field)
 	}
-	header := jen.Type().Id(headerName).Struct(headerFields...)
-	code = append(code, header)
+	meta := jen.Type().Id(metaName).Struct(metaFields...)
+	code = append(code, meta)
 
 	bodyName := fmt.Sprintf("%sBody", structureName)
 	bodyFields := []jen.Code{}
@@ -85,7 +85,7 @@ func genStructureCode(structureName string, info StructureInfo) ([]jen.Code, err
 	dataName := fmt.Sprintf("%sData", structureName)
 	dataType := jen.Type().Id(dataName)
 	dataType.Qual(handlerPackageName, "TStructuredData")
-	dataType.Types(jen.Id(headerName), jen.Id(bodyName))
+	dataType.Types(jen.Id(metaName), jen.Id(bodyName))
 	code = append(code, dataType)
 
 	dataHandlerFuncName := fmt.Sprintf("%sHandlerFunc", structureName)
@@ -113,7 +113,7 @@ func genStructureCode(structureName string, info StructureInfo) ([]jen.Code, err
 		jen.Id("json").String(),
 		jen.Id("log").Qual(handlerPackageName, "Log"),
 	).Error().Block(
-		jen.List(jen.Id("data"), jen.Err()).Op(":=").Qual(handlerPackageName, "JSONToStructuredData").Types(jen.Id(headerName), jen.Id(bodyName)).Call(jen.Id("json")),
+		jen.List(jen.Id("data"), jen.Err()).Op(":=").Qual(handlerPackageName, "JSONToStructuredData").Types(jen.Id(metaName), jen.Id(bodyName)).Call(jen.Id("json")),
 		jen.If(jen.Err().Op("!=").Nil()).Block(jen.Return(jen.Err())),
 		jen.Return(jen.Id("h.f").Call(jen.Id(dataName).Call(jen.Id("data")), jen.Id("log"))),
 	)

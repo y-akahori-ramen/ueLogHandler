@@ -52,7 +52,7 @@ func TestStructuredLogHandler(t *testing.T) {
 			wantErr: nil,
 			wantData: []handlerTestStructureData{
 				{
-					Header: handlerTestHeader{
+					Meta: handlerTestHeader{
 						HeaderString: "test1",
 						HeaderInt:    1,
 						HeaderFloat:  1.0,
@@ -78,7 +78,7 @@ func TestStructuredLogHandler(t *testing.T) {
 			wantErr: nil,
 			wantData: []handlerTestStructureData{
 				{
-					Header: handlerTestHeader{
+					Meta: handlerTestHeader{
 						HeaderString: "testHeader1",
 						HeaderInt:    1,
 						HeaderFloat:  1.0,
@@ -94,7 +94,7 @@ func TestStructuredLogHandler(t *testing.T) {
 					},
 				},
 				{
-					Header: handlerTestHeader{
+					Meta: handlerTestHeader{
 						HeaderString: "testHeader2",
 						HeaderInt:    2,
 						HeaderFloat:  2.0,

@@ -47,7 +47,7 @@ import (
     ueloghandler "github.com/y-akahori-ramen/ueLogHandler"
 )
 
-type Header struct {
+type Meta struct {
     Version string
     Host    string
 }
@@ -60,20 +60,20 @@ type Body struct {
 func main() {
     structuredLogHandler := ueloghandler.NewStructuredLogHandler()
 
-    handlerFunc := func(data ueloghandler.TStructuredData[Header, Body], log ueloghandler.Log) error {
+    handlerFunc := func(data ueloghandler.TStructuredData[Meta, Body], log ueloghandler.Log) error {
         fmt.Printf("Category:%#v\n", log.Category)
-        fmt.Printf("Header:%#v\n", data.Header)
+        fmt.Printf("Meta:%#v\n", data.Meta)
         fmt.Printf("Body:%#v\n", data.Body)
         return nil
     }
 
     structuredLogHandler.AddHandler(ueloghandler.NewStructuredLogDataHandler("SampleStructure", handlerFunc))
 
-    logStr := `[2022.05.21-16.20.57:100][183]LogTemp: _BEGIN_STRUCTURED_{"Header":{"Type":"SampleStructure"},"Body":{"Header":{"Version":"1.0","Host":"localhost"},"Body":{"Event":"Damage","Value":20}}}_END_STRUCTURED_`
+    logStr := `[2022.05.21-16.20.57:100][183]LogTemp: _BEGIN_STRUCTURED_{"Meta":{"Type":"SampleStructure"},"Body":{"Meta":{"Version":"1.0","Host":"localhost"},"Body":{"Event":"Damage","Value":20}}}_END_STRUCTURED_`
     structuredLogHandler.HandleLog(ueloghandler.NewLog(logStr))
     // Output:
     // Category:"LogTemp"
-    // Header:main.Header{Version:"1.0", Host:"localhost"}
+    // Meta:main.Meta{Version:"1.0", Host:"localhost"}
     // Body:main.Body{Event:"Damage", Value:20}
 }
 ```

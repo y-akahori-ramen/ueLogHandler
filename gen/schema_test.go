@@ -2,7 +2,6 @@ package gen_test
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -23,7 +22,7 @@ func TestScheme(t *testing.T) {
 structures:
   list:
     SampleStructure:
-      Header:
+      Meta:
         Tag: DataTag
         Insert: False
         Value: 1.23
@@ -34,7 +33,7 @@ structures:
         Position: vector3`,
 			expectData: map[string]gen.StructureInfo{
 				"SampleStructure": {
-					Header: map[string]interface{}{
+					Meta: map[string]interface{}{
 						"Tag":    "DataTag",
 						"Insert": false,
 						"Value":  1.23,
@@ -54,7 +53,7 @@ structures:
 structures:
   list:
     SampleStructure:
-      Header:
+      Meta:
         Tag: DataTag`,
 			expectData: nil,
 			noErr:      false,
@@ -68,7 +67,7 @@ structures:
         Damage: int32`,
 			expectData: map[string]gen.StructureInfo{
 				"SampleStructure": {
-					Header: map[string]interface{}{},
+					Meta: map[string]interface{}{},
 					Body: map[string]string{
 						"Damage": "int32",
 					},
@@ -104,12 +103,6 @@ structures:
 			assert := assert.New(t)
 
 			readData, err := gen.ReadStructureInfoYAML(strings.NewReader(testCase.yaml))
-			for _, info := range readData {
-				for field, value := range info.Header {
-					fmt.Printf("FieldName:%s ValueType:%s\n", field, reflect.TypeOf(value))
-				}
-			}
-			// fmt.Printf("%#v\n", readData)
 			if testCase.noErr {
 				assert.NoError(err)
 			} else {

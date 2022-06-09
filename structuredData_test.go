@@ -61,7 +61,7 @@ func TestToStructuredData(t *testing.T) {
 		{
 			jsonStr: `{"Header":{"Type":"TypeValue"},"Body":{"Sample":10,"Sample2":"Sample2Value"}}`,
 			wantData: TestStructuredData{
-				Header: Header{Type: "TypeValue"},
+				Meta: Header{Type: "TypeValue"},
 				Body: map[string]interface{}{
 					"Sample":  float64(10),
 					"Sample2": "Sample2Value",
@@ -121,7 +121,7 @@ func TestToStructuredData2(t *testing.T) {
 		{
 			jsonStr: `{"Header":{"Type":"TypeValue"},"Body":{"Name":"A","Position":{"X":0,"Y":1,"Z":2}}}`,
 			wantData: TestStructuredData{
-				Header: Header{Type: "TypeValue"},
+				Meta: Header{Type: "TypeValue"},
 				Body: Body{
 					Name:     "A",
 					Position: Vector{X: 0, Y: 1, Z: 2},
@@ -168,7 +168,7 @@ func TestGetStructuredData(t *testing.T) {
 			logStr: `_BEGIN_STRUCTURED_{"Header":{"Type":"TypeValue"},"Body":{"Sample":10,"Sample2":"Sample2Value"}}_END_STRUCTURED_`,
 			wantData: []TestStructuredData{
 				{
-					Header: Header{Type: "TypeValue"},
+					Meta: Header{Type: "TypeValue"},
 					Body: map[string]interface{}{
 						"Sample":  float64(10),
 						"Sample2": "Sample2Value",
@@ -181,7 +181,7 @@ func TestGetStructuredData(t *testing.T) {
 			logStr: `_BEGIN_STRUCTURED_{"Header":{"Type":"TypeValue"},"Body":{"Sample":{"X":1,"Y":2,"Z":3}}}_END_STRUCTURED_`,
 			wantData: []TestStructuredData{
 				{
-					Header: Header{Type: "TypeValue"},
+					Meta: Header{Type: "TypeValue"},
 					Body: map[string]interface{}{
 						"Sample": map[string]interface{}{
 							"X": float64(1),
