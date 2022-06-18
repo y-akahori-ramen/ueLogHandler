@@ -13,6 +13,7 @@ const handlerPackageName = "github.com/y-akahori-ramen/ueLogHandler"
 func appendGoType(statement *jen.Statement, typename string) error {
 	switch typename {
 	case "float":
+		fallthrough
 	case "double":
 		statement.Float64()
 		return nil
@@ -40,9 +41,9 @@ func appendGoType(statement *jen.Statement, typename string) error {
 	case "vector3":
 		statement.Qual(handlerPackageName, "FVector")
 		return nil
+	default:
+		return fmt.Errorf("GetGoType:Invalid typename:%s", typename)
 	}
-
-	return fmt.Errorf("GetGoType:Invalid typename:%s", typename)
 }
 
 func genStructureCode(structureName string, info StructureInfo) ([]jen.Code, error) {
