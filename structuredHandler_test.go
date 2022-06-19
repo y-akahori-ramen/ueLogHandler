@@ -15,10 +15,10 @@ type handlerTestVector struct {
 	Z float64
 }
 
-type handlerTestHeader struct {
-	HeaderString string
-	HeaderInt    int
-	HeaderFloat  float64
+type handlerTestMeta struct {
+	MetaString string
+	MetaInt    int
+	MetaFloat  float64
 }
 
 type handlerTestBody struct {
@@ -27,7 +27,7 @@ type handlerTestBody struct {
 	BodyVector handlerTestVector
 }
 
-type handlerTestStructureData ueloghandler.TStructuredData[handlerTestHeader, handlerTestBody]
+type handlerTestStructureData ueloghandler.TStructuredData[handlerTestMeta, handlerTestBody]
 
 type handlerTestCase struct {
 	structureTypeName string
@@ -37,7 +37,7 @@ type handlerTestCase struct {
 	actualData        []handlerTestStructureData
 }
 
-func (tc *handlerTestCase) Handle(data ueloghandler.TStructuredData[handlerTestHeader, handlerTestBody], log ueloghandler.Log) error {
+func (tc *handlerTestCase) Handle(data ueloghandler.TStructuredData[handlerTestMeta, handlerTestBody], log ueloghandler.Log) error {
 	tc.actualData = append(tc.actualData, handlerTestStructureData(data))
 	return nil
 }
@@ -47,15 +47,15 @@ func TestStructuredLogHandler(t *testing.T) {
 		{
 			structureTypeName: "TestStructure",
 			jsonStrings: []string{
-				`{"Header":{"HeaderString":"test1","HeaderInt":1,"HeaderFloat":1.0},"Body":{"BodyString":"test1","BodyInt":2,"BodyVector":{"X":1.1,"Y":1.2,"Z":1.3}}}`,
+				`{"Meta":{"MetaString":"test1","MetaInt":1,"MetaFloat":1.0},"Body":{"BodyString":"test1","BodyInt":2,"BodyVector":{"X":1.1,"Y":1.2,"Z":1.3}}}`,
 			},
 			wantErr: nil,
 			wantData: []handlerTestStructureData{
 				{
-					Meta: handlerTestHeader{
-						HeaderString: "test1",
-						HeaderInt:    1,
-						HeaderFloat:  1.0,
+					Meta: handlerTestMeta{
+						MetaString: "test1",
+						MetaInt:    1,
+						MetaFloat:  1.0,
 					},
 					Body: handlerTestBody{
 						BodyString: "test1",
@@ -72,16 +72,16 @@ func TestStructuredLogHandler(t *testing.T) {
 		{
 			structureTypeName: "TestStructure",
 			jsonStrings: []string{
-				`{"Header":{"HeaderString":"testHeader1","HeaderInt":1,"HeaderFloat":1.0},"Body":{"BodyString":"testBody1","BodyInt":2,"BodyVector":{"X":1.1,"Y":1.2,"Z":1.3}}}`,
-				`{"Header":{"HeaderString":"testHeader2","HeaderInt":2,"HeaderFloat":2.0},"Body":{"BodyString":"testBody2","BodyInt":3,"BodyVector":{"X":2.1,"Y":2.2,"Z":2.3}}}`,
+				`{"Meta":{"MetaString":"testMeta1","MetaInt":1,"MetaFloat":1.0},"Body":{"BodyString":"testBody1","BodyInt":2,"BodyVector":{"X":1.1,"Y":1.2,"Z":1.3}}}`,
+				`{"Meta":{"MetaString":"testMeta2","MetaInt":2,"MetaFloat":2.0},"Body":{"BodyString":"testBody2","BodyInt":3,"BodyVector":{"X":2.1,"Y":2.2,"Z":2.3}}}`,
 			},
 			wantErr: nil,
 			wantData: []handlerTestStructureData{
 				{
-					Meta: handlerTestHeader{
-						HeaderString: "testHeader1",
-						HeaderInt:    1,
-						HeaderFloat:  1.0,
+					Meta: handlerTestMeta{
+						MetaString: "testMeta1",
+						MetaInt:    1,
+						MetaFloat:  1.0,
 					},
 					Body: handlerTestBody{
 						BodyString: "testBody1",
@@ -94,10 +94,10 @@ func TestStructuredLogHandler(t *testing.T) {
 					},
 				},
 				{
-					Meta: handlerTestHeader{
-						HeaderString: "testHeader2",
-						HeaderInt:    2,
-						HeaderFloat:  2.0,
+					Meta: handlerTestMeta{
+						MetaString: "testMeta2",
+						MetaInt:    2,
+						MetaFloat:  2.0,
 					},
 					Body: handlerTestBody{
 						BodyString: "testBody2",
@@ -115,7 +115,7 @@ func TestStructuredLogHandler(t *testing.T) {
 			structureTypeName: "InvalidType",
 			wantErr:           errors.New("invalid structure type: InvalidType"),
 			jsonStrings: []string{
-				`{"Header":{"HeaderString":"test1","HeaderInt":1,"HeaderFloat":1.0},"Body":{"BodyString":"test1","BodyInt":2,"BodyVector":{"X":1.1,"Y":1.2,"Z":1.3}}}`,
+				`{"Meta":{"MetaString":"test1","MetaInt":1,"MetaFloat":1.0},"Body":{"BodyString":"test1","BodyInt":2,"BodyVector":{"X":1.1,"Y":1.2,"Z":1.3}}}`,
 			},
 		},
 	}
@@ -127,7 +127,7 @@ func TestStructuredLogHandler(t *testing.T) {
 
 			logStr := ""
 			for _, json := range testCase.jsonStrings {
-				logStr += ueloghandler.BeginStructuredStr + fmt.Sprintf(`{"Header":{"Type":"%s"},"Body":%s}`, testCase.structureTypeName, json) + ueloghandler.EndStructuredStr
+				logStr += ueloghandler.BeginStructuredStr + fmt.Sprintf(`{"Meta":{"Type":"%s"},"Body":%s}`, testCase.structureTypeName, json) + ueloghandler.EndStructuredStr
 			}
 
 			logHandler := ueloghandler.NewStructuredLogHandler()

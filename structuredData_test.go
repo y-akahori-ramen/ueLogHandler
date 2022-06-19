@@ -47,10 +47,10 @@ func TestGetStructuredJson(t *testing.T) {
 }
 
 func TestToStructuredData(t *testing.T) {
-	type Header struct {
+	type Meta struct {
 		Type string
 	}
-	type TestStructuredData ueloghandler.TStructuredData[Header, map[string]interface{}]
+	type TestStructuredData ueloghandler.TStructuredData[Meta, map[string]interface{}]
 
 	type testCase struct {
 		jsonStr  string
@@ -59,9 +59,9 @@ func TestToStructuredData(t *testing.T) {
 	}
 	testCases := []testCase{
 		{
-			jsonStr: `{"Header":{"Type":"TypeValue"},"Body":{"Sample":10,"Sample2":"Sample2Value"}}`,
+			jsonStr: `{"Meta":{"Type":"TypeValue"},"Body":{"Sample":10,"Sample2":"Sample2Value"}}`,
 			wantData: TestStructuredData{
-				Meta: Header{Type: "TypeValue"},
+				Meta: Meta{Type: "TypeValue"},
 				Body: map[string]interface{}{
 					"Sample":  float64(10),
 					"Sample2": "Sample2Value",
@@ -75,12 +75,12 @@ func TestToStructuredData(t *testing.T) {
 			wantErr:  ueloghandler.ErrInvalidStructuredLogFormat,
 		},
 		{
-			jsonStr:  `{"Header":{"Typee":"TypeValue"},"Date":{}}`,
+			jsonStr:  `{"Meta":{"Typee":"TypeValue"},"Date":{}}`,
 			wantData: TestStructuredData{},
 			wantErr:  ueloghandler.ErrInvalidStructuredLogFormat,
 		},
 		{
-			jsonStr:  `{"Headere":{"Type":"TypeValue"},"Body":{"Sample":10,"Sample2":"Sample2Value"}}`,
+			jsonStr:  `{"Metae":{"Type":"TypeValue"},"Body":{"Sample":10,"Sample2":"Sample2Value"}}`,
 			wantData: TestStructuredData{},
 			wantErr:  ueloghandler.ErrInvalidStructuredLogFormat,
 		},
@@ -90,7 +90,7 @@ func TestToStructuredData(t *testing.T) {
 		testCase := testCases[i]
 		t.Run(fmt.Sprintf("Case%d", i), func(t *testing.T) {
 			assert := assert.New(t)
-			result, err := ueloghandler.JSONToStructuredData[Header, map[string]interface{}](testCase.jsonStr)
+			result, err := ueloghandler.JSONToStructuredData[Meta, map[string]interface{}](testCase.jsonStr)
 			assert.Equal(testCase.wantErr, err)
 			assert.Equal(testCase.wantData, TestStructuredData(result))
 		})
@@ -98,7 +98,7 @@ func TestToStructuredData(t *testing.T) {
 }
 
 func TestToStructuredData2(t *testing.T) {
-	type Header struct {
+	type Meta struct {
 		Type string
 	}
 	type Vector struct {
@@ -110,7 +110,7 @@ func TestToStructuredData2(t *testing.T) {
 		Name     string
 		Position Vector
 	}
-	type TestStructuredData ueloghandler.TStructuredData[Header, Body]
+	type TestStructuredData ueloghandler.TStructuredData[Meta, Body]
 
 	type testCase struct {
 		jsonStr  string
@@ -119,9 +119,9 @@ func TestToStructuredData2(t *testing.T) {
 	}
 	testCases := []testCase{
 		{
-			jsonStr: `{"Header":{"Type":"TypeValue"},"Body":{"Name":"A","Position":{"X":0,"Y":1,"Z":2}}}`,
+			jsonStr: `{"Meta":{"Type":"TypeValue"},"Body":{"Name":"A","Position":{"X":0,"Y":1,"Z":2}}}`,
 			wantData: TestStructuredData{
-				Meta: Header{Type: "TypeValue"},
+				Meta: Meta{Type: "TypeValue"},
 				Body: Body{
 					Name:     "A",
 					Position: Vector{X: 0, Y: 1, Z: 2},
@@ -130,12 +130,12 @@ func TestToStructuredData2(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			jsonStr:  `{"Header":{"Type":"TypeValue"},"Date":{"Name":"A","Position":{"X":0,"Y":1,"Z":2}}}`,
+			jsonStr:  `{"Meta":{"Type":"TypeValue"},"Date":{"Name":"A","Position":{"X":0,"Y":1,"Z":2}}}`,
 			wantData: TestStructuredData{},
 			wantErr:  ueloghandler.ErrInvalidStructuredLogFormat,
 		},
 		{
-			jsonStr:  `{"Header":{},"Body":{}}`,
+			jsonStr:  `{"Meta":{},"Body":{}}`,
 			wantData: TestStructuredData{},
 			wantErr:  nil,
 		},
@@ -145,7 +145,7 @@ func TestToStructuredData2(t *testing.T) {
 		testCase := testCases[i]
 		t.Run(fmt.Sprintf("Case%d", i), func(t *testing.T) {
 			assert := assert.New(t)
-			result, err := ueloghandler.JSONToStructuredData[Header, Body](testCase.jsonStr)
+			result, err := ueloghandler.JSONToStructuredData[Meta, Body](testCase.jsonStr)
 			assert.Equal(testCase.wantErr, err)
 			assert.Equal(testCase.wantData, TestStructuredData(result))
 		})
@@ -153,10 +153,10 @@ func TestToStructuredData2(t *testing.T) {
 }
 
 func TestGetStructuredData(t *testing.T) {
-	type Header struct {
+	type Meta struct {
 		Type string
 	}
-	type TestStructuredData ueloghandler.TStructuredData[Header, map[string]interface{}]
+	type TestStructuredData ueloghandler.TStructuredData[Meta, map[string]interface{}]
 
 	type testCase struct {
 		logStr   string
@@ -165,10 +165,10 @@ func TestGetStructuredData(t *testing.T) {
 	}
 	testCases := []testCase{
 		{
-			logStr: `_BEGIN_STRUCTURED_{"Header":{"Type":"TypeValue"},"Body":{"Sample":10,"Sample2":"Sample2Value"}}_END_STRUCTURED_`,
+			logStr: `_BEGIN_STRUCTURED_{"Meta":{"Type":"TypeValue"},"Body":{"Sample":10,"Sample2":"Sample2Value"}}_END_STRUCTURED_`,
 			wantData: []TestStructuredData{
 				{
-					Meta: Header{Type: "TypeValue"},
+					Meta: Meta{Type: "TypeValue"},
 					Body: map[string]interface{}{
 						"Sample":  float64(10),
 						"Sample2": "Sample2Value",
@@ -178,10 +178,10 @@ func TestGetStructuredData(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			logStr: `_BEGIN_STRUCTURED_{"Header":{"Type":"TypeValue"},"Body":{"Sample":{"X":1,"Y":2,"Z":3}}}_END_STRUCTURED_`,
+			logStr: `_BEGIN_STRUCTURED_{"Meta":{"Type":"TypeValue"},"Body":{"Sample":{"X":1,"Y":2,"Z":3}}}_END_STRUCTURED_`,
 			wantData: []TestStructuredData{
 				{
-					Meta: Header{Type: "TypeValue"},
+					Meta: Meta{Type: "TypeValue"},
 					Body: map[string]interface{}{
 						"Sample": map[string]interface{}{
 							"X": float64(1),
@@ -194,27 +194,27 @@ func TestGetStructuredData(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			logStr:   `_BEGIN_STRUCTURED_{"InvalidHeader":{"Type":"TypeValue"},"Body":{"Sample":{"X":1,"Y":2,"Z":3}}}_END_STRUCTURED_`,
+			logStr:   `_BEGIN_STRUCTURED_{"InvalidMeta":{"Type":"TypeValue"},"Body":{"Sample":{"X":1,"Y":2,"Z":3}}}_END_STRUCTURED_`,
 			wantData: []TestStructuredData{},
 			wantErr:  ueloghandler.ErrInvalidStructuredLogFormat,
 		},
 		{
-			logStr:   `_BEGIN_STRUCTURED_{"Header":{"Type":"TypeValue"},"InvalidData":{"Sample":{"X":1,"Y":2,"Z":3}}}_END_STRUCTURED_`,
+			logStr:   `_BEGIN_STRUCTURED_{"Meta":{"Type":"TypeValue"},"InvalidData":{"Sample":{"X":1,"Y":2,"Z":3}}}_END_STRUCTURED_`,
 			wantData: []TestStructuredData{},
 			wantErr:  ueloghandler.ErrInvalidStructuredLogFormat,
 		},
 		{
-			logStr:   `_BEGIN_STRUCTURED_{"Header":{"Type":"TypeValue"},"InvalidData":{"Sample":{"X":1,"Y":2,"Z":3}}}_END_STRUCTURED__BEGIN_STRUCTURED_{"Header":{"Type":"TypeValue"},"Body":{"Sample":10,"Sample2":"Sample2Value"}}_END_STRUCTURED_`,
+			logStr:   `_BEGIN_STRUCTURED_{"Meta":{"Type":"TypeValue"},"InvalidData":{"Sample":{"X":1,"Y":2,"Z":3}}}_END_STRUCTURED__BEGIN_STRUCTURED_{"Meta":{"Type":"TypeValue"},"Body":{"Sample":10,"Sample2":"Sample2Value"}}_END_STRUCTURED_`,
 			wantData: []TestStructuredData{},
 			wantErr:  ueloghandler.ErrInvalidStructuredLogFormat,
 		},
 		{
-			logStr:   `_BEGIN_STRUCTURED_{"Header":{"Type":"TypeValue"},"Body":{"Sample":10,"Sample2":"Sample2Value"}}_END_STRUCTURED__BEGIN_STRUCTURED_{"Header":{"Type":"TypeValue"},"InvalidData":{"Sample":{"X":1,"Y":2,"Z":3}}}_END_STRUCTURED_`,
+			logStr:   `_BEGIN_STRUCTURED_{"Meta":{"Type":"TypeValue"},"Body":{"Sample":10,"Sample2":"Sample2Value"}}_END_STRUCTURED__BEGIN_STRUCTURED_{"Meta":{"Type":"TypeValue"},"InvalidData":{"Sample":{"X":1,"Y":2,"Z":3}}}_END_STRUCTURED_`,
 			wantData: []TestStructuredData{},
 			wantErr:  ueloghandler.ErrInvalidStructuredLogFormat,
 		},
 		{
-			logStr:   `{"Header":{"Type":"TypeValue"},"InvalidData":{"Sample":{"X":1,"Y":2,"Z":3}}}`,
+			logStr:   `{"Meta":{"Type":"TypeValue"},"InvalidData":{"Sample":{"X":1,"Y":2,"Z":3}}}`,
 			wantData: []TestStructuredData{},
 			wantErr:  nil,
 		},
@@ -224,7 +224,7 @@ func TestGetStructuredData(t *testing.T) {
 		testCase := testCases[i]
 		t.Run(fmt.Sprintf("Case%d", i), func(t *testing.T) {
 			assert := assert.New(t)
-			results, err := ueloghandler.GetStructuredDataFromLog[Header, map[string]interface{}](testCase.logStr)
+			results, err := ueloghandler.GetStructuredDataFromLog[Meta, map[string]interface{}](testCase.logStr)
 			assert.Equal(testCase.wantErr, err)
 
 			resultsTypeConvert := []TestStructuredData{}
