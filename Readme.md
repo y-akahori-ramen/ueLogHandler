@@ -113,13 +113,7 @@ func main() {
         return nil
     })
 
-    watcherLogHandler := ueloghandler.NewWatcherLogHandler(func(log ueloghandler.WatcherLog) error {
-        fmt.Printf("Log:%#v LogFileOpenAt:%s\n", log.LogData, log.FileOpenTime)
-        return nil
-    })
-
     wacher.AddLogHandler(logHandler)
-    wacher.AddWatcherLogHandler(watcherLogHandler)
 
     fileNotifier := ueloghandler.NewFileNotifier("ue.log", time.Millisecond*500)
 
