@@ -30,41 +30,41 @@ func GetStructuredJsonFromLog(logstr string) []string {
 
 var ErrInvalidStructuredLogFormat = errors.New("ueLogHandler:Invalid structured log format")
 
-type TStructuredData[THeader, TBody any] struct {
-	Header THeader
-	Body   TBody
+type TStructuredData[TMeta, TBody any] struct {
+	Meta TMeta
+	Body TBody
 }
 
-type tStructuredDataForParse[THeader, TBody any] struct {
-	Header *THeader
-	Body   *TBody
+type tStructuredDataForParse[TMeta, TBody any] struct {
+	Meta *TMeta
+	Body *TBody
 }
 
-func JSONToStructuredData[THeader, TBody any](jsonStr string) (TStructuredData[THeader, TBody], error) {
-	var parsedData tStructuredDataForParse[THeader, TBody]
+func JSONToStructuredData[TMeta, TBody any](jsonStr string) (TStructuredData[TMeta, TBody], error) {
+	var parsedData tStructuredDataForParse[TMeta, TBody]
 	if err := json.Unmarshal([]byte(jsonStr), &parsedData); err != nil {
-		return TStructuredData[THeader, TBody]{}, err
+		return TStructuredData[TMeta, TBody]{}, err
 	}
 
-	valid := parsedData.Header != nil && parsedData.Body != nil
+	valid := parsedData.Meta != nil && parsedData.Body != nil
 	if valid {
-		return TStructuredData[THeader, TBody]{Header: *parsedData.Header, Body: *parsedData.Body}, nil
+		return TStructuredData[TMeta, TBody]{Meta: *parsedData.Meta, Body: *parsedData.Body}, nil
 	} else {
-		return TStructuredData[THeader, TBody]{}, ErrInvalidStructuredLogFormat
+		return TStructuredData[TMeta, TBody]{}, ErrInvalidStructuredLogFormat
 	}
 }
 
-func GetStructuredDataFromLog[THeader, TBody any](logstr string) ([]TStructuredData[THeader, TBody], error) {
+func GetStructuredDataFromLog[TMeta, TBody any](logstr string) ([]TStructuredData[TMeta, TBody], error) {
 	jsons := GetStructuredJsonFromLog(logstr)
 	if len(jsons) == 0 {
-		return []TStructuredData[THeader, TBody]{}, nil
+		return []TStructuredData[TMeta, TBody]{}, nil
 	}
 
-	data := []TStructuredData[THeader, TBody]{}
+	data := []TStructuredData[TMeta, TBody]{}
 	for _, jsonStr := range jsons {
-		newData, err := JSONToStructuredData[THeader, TBody](jsonStr)
+		newData, err := JSONToStructuredData[TMeta, TBody](jsonStr)
 		if err != nil {
-			return []TStructuredData[THeader, TBody]{}, err
+			return []TStructuredData[TMeta, TBody]{}, err
 		} else {
 			data = append(data, newData)
 		}

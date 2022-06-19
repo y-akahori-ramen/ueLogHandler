@@ -35,7 +35,7 @@ func (h *StructuredLogHandler) HandleLog(log Log) error {
 
 	if len(results) != 0 {
 		for _, result := range results {
-			structureType := result.Header.Type
+			structureType := result.Meta.Type
 			if _, ok := h.handlers[structureType]; !ok {
 				return fmt.Errorf("invalid structure type: %s", structureType)
 			} else {
