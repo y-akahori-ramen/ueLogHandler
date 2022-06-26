@@ -310,7 +310,7 @@ func main() {
 ### Schema file details
 
 #### Format
-The format of the schema file is defined in the following CUE file.
+The format of the schema file is defined in the following CUE file.  
 [schema.cue](./gen/schema.cue)
 
 #### Meta and Body
