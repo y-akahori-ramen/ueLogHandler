@@ -107,7 +107,7 @@ Define structured log format in a schema file, and generate following source cod
 You can use the generated source code to implement structured log output and handling.
 
 ### Usage
-#### Define structured log format in a schema file
+#### 1.Define structured log format in a schema file
 Define the format of the structured log in YAML.
 
 ```yaml
