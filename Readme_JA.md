@@ -1,20 +1,19 @@
 # ueLogHandler
-Utility for handling Unreal Engine format log in Go.
+GoでUnrealEngine形式のログを処理するためのユーティリティです。
 
-[日本語版](./Readme_JA.md)
+[English Version](./Readme.md)
 
-## Feature
-- Parse Unreal Engine log format
-- Watch Unreal Engine log file
-- Structured log output and handling
+## 機能
+- UnrealEngine形式のログ構文解析
+- UnrealEngineのログファイル監視
+- 構造化ログの出力と解析
 
-## Parse Unreal Engine log format
-Parse UnrealEngine format logs to get the following information.
-
-- Log output time
-- Log output frame
-- Log category
-- Log verbosity
+## UnrealEngine形式のログ構文解析
+UnrealEngine形式のログを解析して以下の情報を取得することができます。
+- ログ出力時刻
+- ログ出力フレーム
+- ログカテゴリ
+- Verbosity
 
 ```go
 package main
@@ -47,8 +46,8 @@ func main() {
 }
 ```
 
-## Watch Unreal Engine log file
-Watch Unreal Engine log file and handle log for each update.
+## UnrealEngineのログファイル監視
+UnrealEngineのログを監視して更新ごとにログをハンドリングすることができます。
 
 ```go
 package main
@@ -98,17 +97,17 @@ func main() {
 }
 ```
 
-## Structured log output and handling
-Define structured log format in a schema file, and generate following source code.
+## 構造化ログの出力と解析
+構造化ログフォーマットをスキーマファイルで定義でき、スキーマファイルから以下のソースコードを生成することができます。
 
-- Utility to output structured logs as UnrealEngine logs
-- Log handler for structured logs
+- 構造化ログをUnrealEngineのログとして出力するためのユーティリティ
+- 構造化ログのログハンドラ
 
-You can use the generated source code to implement structured log output and handling.
+生成されたソースコードを使用することで構造化ログ出力と解析を行うことができます。
 
-### Usage
-#### Define structured log format in a schema file
-Define the format of the structured log in YAML.
+### 使い方
+#### 1.構造化ログフォーマットの定義
+構造化ログのフォーマットをYAMLで定義します。
 
 ```yaml
 structures:
@@ -130,8 +129,8 @@ structures:
         Count: int32
 ```
 
-#### 2.Generate source code
-Build the source code generator and pass the schema file to generate the source code.
+#### 2.ソースコード生成
+ソースコードジェネレータをビルドし、スキーマファイルを渡してソースコードを生成します。
 
 ```
 cd cmds/structuregen
@@ -142,7 +141,7 @@ go build -o gen
 ./gen -cpp-namespace log -cpp-out sample.h -go-package main -go-out sample.go -src structure.yaml
 ```
 
-When executed, it will output `sample.h` and `sample.go`.
+実行すると `sample.h` と `sample.go` が出力されます。
 
 sample.h
 ```cpp
@@ -230,9 +229,9 @@ func NewSample2LogHandler(f Sample2HandlerFunc) ueloghandler.StructuredLogDataHa
 }
 ```
 
-#### 3.Output structured log
-The generated `sample.h` defines a function that creates a structured log string.  
-You can use this function to implement structured log output.
+#### 3.構造化ログの出力
+生成された `sample.h` には構造化ログ文字列を作成する関数が定義されています。  
+この関数を使用し構造化ログを出力します。
 
 ```cpp
 #include "sample.h"
@@ -245,9 +244,9 @@ void SampleFunc()
 }
 ```
 
-#### 4.Handle structured log
-The generated `sample.go` defines a handler for structured logs.  
-By registering this handler with the Watcher, you can handle structured logs.
+#### 4.構造化ログの解析
+生成された `sample.go` には構造化ログのハンドラが定義されています。  
+このハンドラをWatcherに登録することで構造化ログをハンドリングすることができます。
 
 ```go
 package main
@@ -307,16 +306,16 @@ func main() {
 }
 ```
 
-### Schema file details
+### スキーマファイル詳細
 
-#### Format
-The format of the schema file is defined in the following CUE file.
+#### フォーマット
+スキーマファイルのフォーマットは以下のCUEファイルで定義されています。  
 [schema.cue](./gen/schema.cue)
 
-#### Meta and Body
-Meta always outputs the value specified in the schema file.  
-Meta is used to inform the Go language structured log handler how to handle logs.  
-For example, the name of the table to register the structured log in the database.
+#### MetaとBody
+Metaはスキーマファイルで指定された値が常に出力されます。  
+MetaはGo言語の構造化ログハンドラ側でどのようにログを扱うかの情報を伝えるために使用します。  
+例えば構造化ログをデータベースに登録する場合の登録先テーブル名等です。
 
-Body is the value that will be output when UnrealEngine outputs the log.  
-For example, the location of a damaged character.
+BodyはUnrealEngineのログ出力時に指定された値が出力されます。  
+例えばダメージを受けたキャラクターの場所等です。
